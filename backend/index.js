@@ -8,7 +8,7 @@ require('dotenv').config();
 const path = require('path');
 const cors = require('cors');
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3030;
 
 const { serverError } = require('./src/middleware/errorHandler');
 const urlRouter = require('./src/routers/urlRouter');
@@ -27,7 +27,7 @@ server.use(cors());
 morgan.token('body', function (req, res) {
   return JSON.stringify(req.body);
 });
-app.use(
+server.use(
   morgan(' :method :url :status :res[content-length] - :response-time ms :body')
 );
 
