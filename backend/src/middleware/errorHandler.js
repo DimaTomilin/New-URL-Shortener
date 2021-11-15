@@ -1,22 +1,23 @@
 const fs = require('fs');
 const path = require('path');
+const URLShorten = require('../models/urlShorten');
 
 //Check if this user already have shorten url to this url
-function isURLExist(req, res, next) {
+async function isURLExist(req, res, next) {
   const URL = req.body.url;
-  const dir = req.headers.username;
-  const homedir = './backend/users';
-  const allShortenURLs = fs.readdirSync(path.join(homedir, dir));
-  allShortenURLs.forEach((url) => {
-    const urlInformation = JSON.parse(
-      fs.readFileSync(path.join(homedir, dir, url))
-    );
-    if (urlInformation.LongURL === URL) {
+  const username = req.user.user;
+  try {
+    const urlShorten = await URLShorten.find({
+      username: username,
+      original_URL: URL,
+    });
+    if (urlShorten.length !== 0) {
       return res.status(403).send('Shorten URL to this URl already exist.');
     }
-  });
-
-  next();
+    next();
+  } catch (err) {
+    return res.send(err);
+  }
 }
 
 function serverError(error, req, res, next) {
