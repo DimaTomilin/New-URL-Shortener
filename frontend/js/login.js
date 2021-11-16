@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { showingAlert } from './alerts';
+
 function setFormMessage(formElement, type, message) {
   const messageElement = formElement.querySelector('.form__message');
 
@@ -14,7 +17,7 @@ function validationInputs(element) {
   for (const input of inputs) {
     if (input.value.trim() === '') {
       setFormMessage(element, 'error', 'Invalid username/password combination');
-      return;
+      return false;
     }
   }
   const usernameField = element.querySelector('.username');
@@ -25,7 +28,9 @@ function validationInputs(element) {
       'error',
       'Username/password must be at least 8 characters'
     );
+    return false;
   }
+  return true;
 }
 
 function checkConfirmPassword(element) {
@@ -33,14 +38,28 @@ function checkConfirmPassword(element) {
   const passwordFields = element
     .querySelectorAll('.password')
     .forEach((passwordField) => {
-      if (password === '') {
+      if (!password) {
         password = passwordField.value;
       } else {
         if (password !== passwordField.value) {
           setFormMessage(element, 'error', 'Password doesn`t match');
+          return false;
         }
       }
     });
+  return true;
+}
+
+async function signInRequest(username, password) {
+  try {
+    const response = await axios.post('http://localhost:3030/user/signin', {
+      username,
+      password,
+    });
+    return response;
+  } catch (err) {
+    throw err;
+  }
 }
 
 function setInputError(inputElement, message) {
@@ -57,9 +76,30 @@ function clearInputError(inputElement) {
   ).textContent = '';
 }
 
+function clearInputs(element) {
+  element.querySelectorAll('.form__input').forEach((input) => {
+    input.value = '';
+  });
+}
+
+function showURLShortener(response) {
+  const loginForm = document.querySelector('#login');
+  clearInputs(loginForm);
+  loginForm.classList.add('form--hidden');
+  document.getElementById('url-shortener').classList.remove('form--hidden');
+  document.getElementById('root').classList.remove('container');
+  document.querySelector('body').classList.remove('sign__in');
+  showingAlert(
+    document.getElementById('alert1'),
+    response.status,
+    response.data
+  );
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#login');
   const createAccountForm = document.querySelector('#createAccount');
+  const urlShortener = document.getElementById('url-shortener');
 
   document
     .querySelector('#linkCreateAccount')
@@ -75,9 +115,18 @@ document.addEventListener('DOMContentLoaded', () => {
     createAccountForm.classList.add('form--hidden');
   });
 
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    validationInputs(loginForm);
+    const username = loginForm.querySelector('.username').value;
+    const password = loginForm.querySelector('.password').value;
+    if (validationInputs(loginForm)) {
+      try {
+        const response = await signInRequest(username, password);
+        showURLShortener(response);
+      } catch (err) {
+        setFormMessage(loginForm, 'error', err.response.data);
+      }
+    }
 
     // Perform your AJAX/Fetch login
 
@@ -86,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   createAccountForm.addEventListener('submit', (e) => {
     e.preventDefault();
+    console.log('1');
     validationInputs(createAccountForm);
     checkConfirmPassword(createAccountForm);
 
@@ -95,19 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelectorAll('.form__input').forEach((inputElement) => {
-    inputElement.addEventListener('blur', (e) => {
-      if (
-        e.target.id === 'signupUsername' &&
-        e.target.value.length > 0 &&
-        e.target.value.length < 10
-      ) {
-        setInputError(
-          inputElement,
-          'Username must be at least 10 characters in length'
-        );
-      }
-    });
-
     inputElement.addEventListener('input', (e) => {
       clearInputError(inputElement);
     });
