@@ -22,6 +22,12 @@ h1 {
   text-align: center;
   font-size: 50px;
 }
+
+p {
+  margin: 25px 15px;
+  line-height: 22px;
+}
+
 #sing-in-button,
 #check-button {
   font-size: 14px;
@@ -62,7 +68,7 @@ h1 {
 #shorten,
 #statistic {
   background-color: seashell;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 500;
   text-align: center;
   width: 50%;
@@ -76,6 +82,15 @@ h1 {
 
 #statistic {
   margin-bottom: 100px;
+}
+
+.statistic-div {
+  margin: 10px;
+  padding: 5px;
+}
+
+.statistic-div > p {
+  margin: 0px;
 }
 
 .buttons {
