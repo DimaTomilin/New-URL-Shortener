@@ -19,7 +19,7 @@ exports.validateURL = async (req, res, next) => {
   }
 };
 
-exports.validateUsername = async (req, res, next) => {
+exports.validateCreateUsername = async (req, res, next) => {
   const { username, password } = req.body;
   try {
     if (username.length > 7 && password.length > 7) {
@@ -36,6 +36,24 @@ exports.validateUsername = async (req, res, next) => {
     } else {
       return res.status(401).send('Username/password invalid');
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.validateUsername = async (req, res, next) => {
+  const { username } = req.body;
+  try {
+    const user = User.exists({ username }, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      if (!result) {
+        return res.status(403).send('Unknown user');
+      } else {
+        next();
+      }
+    });
   } catch (err) {
     next(err);
   }

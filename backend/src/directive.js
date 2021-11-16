@@ -6,7 +6,7 @@ const URLShorten = require('./models/urlShorten');
 function urlCheck(url) {
   URLShorten.exists({ short_URL: { $regex: { url } } }, (err, result) => {
     if (err) {
-      throw err;
+      return false;
     }
     if (result) {
       return result;

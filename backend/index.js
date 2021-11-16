@@ -23,11 +23,11 @@ server.use(express.json());
 server.use(cookieParser());
 server.use(cors());
 
-// server.use('/', express.static('../dist')); // serve main path as static dir
-// server.get('/', function (req, res) {
-//   // serve main path as static file
-//   res.sendFile('../dist/index.html');
-// });
+server.use('/', express.static('./dist')); // serve main path as static dir
+server.get('/', function (req, res) {
+  // serve main path as static file
+  res.sendFile('./dist/index.html');
+});
 morgan.token('body', function (req, res) {
   return JSON.stringify(req.body);
 });
@@ -48,7 +48,7 @@ mongoose
 server.use('/user', userRouter);
 server.use('/url', urlRouter);
 
-server.get('/:url', async (req, res) => {
+server.get('/api/:url', async (req, res) => {
   const url = req.params.url;
   const shorten = await URLShorten.findOne({
     short_URL: { $regex: url },

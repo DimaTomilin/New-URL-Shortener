@@ -40,14 +40,14 @@ exports.signIn = async (req, res) => {
     bcrypt.compare(password, person.hash, function (err, result) {
       // if passwords match
       if (result) {
-        res.cookie('token', token);
+        res.cookie('token', token, { maxAge: 1200000 });
         res.send(`It matches! Hi ${username}.`);
         console.log('It matches!');
       }
       // if passwords do not match
       else {
-        res.send(err);
         console.log('Invalid password!');
+        return res.status(401).send('Invalid password!');
       }
     });
   } catch (err) {

@@ -8,12 +8,15 @@ const {
   logOut,
   showAll,
 } = require('../controllers/user');
-const { validateUsername } = require('../middleware/validation');
+const {
+  validateCreateUsername,
+  validateUsername,
+} = require('../middleware/validation');
 
 // creating a user
-router.put('/create', validateUsername, createUser);
+router.put('/create', validateCreateUsername, createUser);
 
-router.post('/signin', signIn);
+router.post('/signin', validateUsername, signIn);
 
 router.use(authenticateToken);
 //get message which user I use at the moment
