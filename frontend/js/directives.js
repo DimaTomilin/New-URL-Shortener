@@ -1,3 +1,5 @@
+import { showingAlert, showingAlert2 } from './alerts';
+
 document.getElementById('to-main').addEventListener('click', () => {
   document.getElementById('url-shortener').style.display = 'block';
   document.getElementById('url-input').value = '';
@@ -22,4 +24,22 @@ document.getElementById('execCopy').addEventListener('click', copyFunction);
 function copyFunction() {
   document.getElementById('short-url').select();
   document.execCommand('copy');
+}
+
+export function validateURL(url) {
+  try {
+    const validatedURL = new URL(url);
+    if (
+      validatedURL.protocol === 'http:' ||
+      validatedURL.protocol === 'https:'
+    ) {
+      return validatedURL;
+    } else {
+      showingAlert2('Unknown protocol. Please try again.');
+      throw err;
+    }
+  } catch (err) {
+    showingAlert2('Invalid URL please try again.');
+    throw err;
+  }
 }
