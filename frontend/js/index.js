@@ -6,5 +6,3 @@ import './shortens';
 import './login';
 import '../style.css';
 import '../singin-style.css';
-
-localStorage.setItem('username', '');

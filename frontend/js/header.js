@@ -1,35 +1,27 @@
 import { showingAlert } from './alerts';
+import { showingSignIn, toMainPage } from './directives';
 import axios from 'axios';
 
-const usernameInput = document.getElementById('username-area');
-
-document.getElementById('sing-in-button').addEventListener('click', userSingIn);
+document.getElementById('log-out-button').addEventListener('click', userLogOut);
 document.getElementById('check-button').addEventListener('click', checkUser);
 
-async function userSingIn() {
-  const username = usernameInput.value.toLowerCase();
-  localStorage.setItem('username', username);
-
-  const response = await fetch(
-    `https://secure-wildwood-48640.herokuapp.com/user/create/${username}`,
-    {
-      method: 'PUT',
-    }
+//Function of log out from user(Deleting token)
+async function userLogOut() {
+  const response = await axios.delete('http://localhost:3030/user/logout');
+  showingAlert(
+    document.getElementById('alert1'),
+    response.status,
+    response.data
   );
-  const body = await response.text();
-  showingAlert(document.getElementById('alert1'), response.status, body);
-  usernameInput.value = '';
+  toMainPage();
+  setTimeout(() => {
+    showingSignIn();
+  }, 1200);
 }
 
+//Show user
 async function checkUser() {
-  const response = await axios.get(
-    `https://secure-wildwood-48640.herokuapp.com/user/info`,
-    {
-      headers: {
-        username: localStorage.getItem('username'),
-      },
-    }
-  );
+  const response = await axios.get(`http://localhost:3030/user/info`);
   showingAlert(
     document.getElementById('alert1'),
     response.status,

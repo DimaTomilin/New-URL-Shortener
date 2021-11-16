@@ -1,5 +1,6 @@
 import { statisticSection } from './shortens';
 
+//Generit function to crating new DOM elements
 function createElement(
   tagName,
   children = [],
@@ -27,39 +28,45 @@ function createElement(
   return el;
 }
 
+//Creating new statistic page from shorten object
 export function urlStatistic(obj) {
   const header = createElement('h3');
   header.innerHTML = 'Statistic of URL Shorten';
-  const shortURL = createElement('div');
-  shortURL.innerHTML = `<p>Short URL: <a href='https://secure-wildwood-48640.herokuapp.com/${obj.ShortURL}' target='_blank'> https://secure-wildwood-48640.herokuapp.com/${obj.ShortURL} <a><p>`;
-  const longURL = createElement('div');
-  longURL.innerHTML = `<p>Long URL: <a href='${obj.LongURL}' target='_blank'> ${obj.LongURL} <a><p>`;
-  const counter = createElement('div');
-  counter.innerHTML = `Counter: ${obj.Counter}`;
-  const creatingtime = createElement('div');
-  creatingtime.innerHTML = `Was created: ${obj.CreateTime}`;
+  const shortURL = createElement('div', [], ['statistic-div']);
+  shortURL.innerHTML = `<p>Short URL: <a href='${obj.short_URL}' target='_blank'> ${obj.short_URL} <a></p>`;
+  const longURL = createElement('div', [], ['statistic-div']);
+  longURL.innerHTML = `<p>Long URL: <a href='${obj.original_URL}' target='_blank'> ${obj.original_URL} <a></p>`;
+  const counter = createElement('div', [], ['statistic-div']);
+  counter.innerHTML = `Counter: ${obj.counter}`;
+  const creatingtime = createElement('div', [], ['statistic-div']);
+  creatingtime.innerHTML = `Was created: ${obj.createdAt}`;
   document
     .getElementById('statistic')
     .append(header, shortURL, longURL, counter, creatingtime);
 }
 
-export function generateList(object) {
+//Creating list of user`s shorts urls
+export function generateList(listOfShortens) {
   document.getElementById('statistic').innerHTML = '';
-  for (const url in object) {
+  for (const shorten of listOfShortens) {
     const shortPart = createElement(
       'div',
-      [`https://secure-wildwood-48640.herokuapp.com/${url}`],
+      [`${shorten.short_URL}`],
       ['short-url'],
       {},
       { click: statisticSection }
     );
 
     const longPart = createElement('a', [], ['long-url'], {}, {});
-    longPart.innerHTML = `${object[url]}`;
-    longPart.href = object[url];
+    longPart.innerHTML = `${shorten.original_URL}`;
+    longPart.href = shorten.original_URL;
     longPart.target = '_blank';
-    const shorten = createElement('div', [shortPart, longPart], ['users-url']);
+    const shortenElement = createElement(
+      'div',
+      [shortPart, longPart],
+      ['users-url']
+    );
 
-    document.getElementById('statistic').append(shorten);
+    document.getElementById('statistic').append(shortenElement);
   }
 }

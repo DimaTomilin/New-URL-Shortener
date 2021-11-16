@@ -1,7 +1,14 @@
 import axios from 'axios';
-import { showingAlert } from './alerts';
+import {
+  validationInputs,
+  checkConfirmPassword,
+  clearInputs,
+  showURLShortener,
+  cleanFormMessage,
+} from './directives';
 
-function setFormMessage(formElement, type, message) {
+//Function that added error message to Sign In and Sign Up pages
+export function setFormMessage(formElement, type, message) {
   const messageElement = formElement.querySelector('.form__message');
 
   messageElement.textContent = message;
@@ -12,44 +19,7 @@ function setFormMessage(formElement, type, message) {
   messageElement.classList.add(`form__message--${type}`);
 }
 
-function validationInputs(element) {
-  const inputs = element.querySelectorAll('.form__input');
-  for (const input of inputs) {
-    if (input.value.trim() === '') {
-      setFormMessage(element, 'error', 'Invalid username/password combination');
-      return false;
-    }
-  }
-  const usernameField = element.querySelector('.username');
-  const passwordField = element.querySelector('.password');
-  if (usernameField.value.length < 8 || passwordField.value.length < 8) {
-    setFormMessage(
-      element,
-      'error',
-      'Username/password must be at least 8 characters'
-    );
-    return false;
-  }
-  return true;
-}
-
-function checkConfirmPassword(element) {
-  let password;
-  const passwordFields = element
-    .querySelectorAll('.password')
-    .forEach((passwordField) => {
-      if (!password) {
-        password = passwordField.value;
-      } else {
-        if (password !== passwordField.value) {
-          setFormMessage(element, 'error', 'Password doesn`t match');
-          return false;
-        }
-      }
-    });
-  return true;
-}
-
+//Send request to Sign In
 async function signInRequest(username, password) {
   try {
     const response = await axios.post('http://localhost:3030/user/signin', {
@@ -62,59 +32,45 @@ async function signInRequest(username, password) {
   }
 }
 
-function setInputError(inputElement, message) {
-  inputElement.classList.add('form__input--error');
-  inputElement.parentElement.querySelector(
-    '.form__input-error-message'
-  ).textContent = message;
+//Send request to Sign Up
+async function signUpRequest(username, password) {
+  try {
+    const response = await axios.put('http://localhost:3030/user/create', {
+      username,
+      password,
+    });
+    return response;
+  } catch (err) {
+    throw err;
+  }
 }
 
-function clearInputError(inputElement) {
-  inputElement.classList.remove('form__input--error');
-  inputElement.parentElement.querySelector(
-    '.form__input-error-message'
-  ).textContent = '';
-}
-
-function clearInputs(element) {
-  element.querySelectorAll('.form__input').forEach((input) => {
-    input.value = '';
-  });
-}
-
-function showURLShortener(response) {
-  const loginForm = document.querySelector('#login');
-  clearInputs(loginForm);
-  loginForm.classList.add('form--hidden');
-  document.getElementById('url-shortener').classList.remove('form--hidden');
-  document.getElementById('root').classList.remove('container');
-  document.querySelector('body').classList.remove('sign__in');
-  showingAlert(
-    document.getElementById('alert1'),
-    response.status,
-    response.data
-  );
-}
-
+//Add all needed functionality bu loading page
 document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#login');
   const createAccountForm = document.querySelector('#createAccount');
-  const urlShortener = document.getElementById('url-shortener');
 
+  //Switch to Create Account Form
   document
     .querySelector('#linkCreateAccount')
     .addEventListener('click', (e) => {
       e.preventDefault();
       loginForm.classList.add('form--hidden');
       createAccountForm.classList.remove('form--hidden');
+      clearInputs();
+      cleanFormMessage(loginForm);
     });
 
+  //Switch to Login Form
   document.querySelector('#linkLogin').addEventListener('click', (e) => {
     e.preventDefault();
     loginForm.classList.remove('form--hidden');
     createAccountForm.classList.add('form--hidden');
+    clearInputs();
+    cleanFormMessage(createAccountForm);
   });
 
+  //Behavior after submit in login form
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = loginForm.querySelector('.username').value;
@@ -122,31 +78,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (validationInputs(loginForm)) {
       try {
         const response = await signInRequest(username, password);
+        cleanFormMessage(loginForm);
         showURLShortener(response);
       } catch (err) {
         setFormMessage(loginForm, 'error', err.response.data);
       }
     }
-
-    // Perform your AJAX/Fetch login
-
-    //setFormMessage(loginForm, 'error', 'Invalid username/password combination');
   });
 
-  createAccountForm.addEventListener('submit', (e) => {
+  //Behavior after submit in create account form
+  createAccountForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('1');
-    validationInputs(createAccountForm);
-    checkConfirmPassword(createAccountForm);
-
-    // Perform your AJAX/Fetch login
-
-    //setFormMessage(loginForm, 'error', 'Invalid username/password combination');
-  });
-
-  document.querySelectorAll('.form__input').forEach((inputElement) => {
-    inputElement.addEventListener('input', (e) => {
-      clearInputError(inputElement);
-    });
+    const username = createAccountForm.querySelector('.username').value;
+    const password = createAccountForm.querySelector('.password').value;
+    if (
+      validationInputs(createAccountForm) &&
+      checkConfirmPassword(createAccountForm)
+    ) {
+      try {
+        const response = await signUpRequest(username, password);
+        clearInputs();
+        setFormMessage(
+          createAccountForm,
+          'success',
+          'Succesful registration. Please make sign in.'
+        );
+        setTimeout(() => {
+          loginForm.classList.remove('form--hidden');
+          createAccountForm.classList.add('form--hidden');
+          cleanFormMessage(createAccountForm);
+        }, 1200);
+      } catch (err) {
+        setFormMessage(createAccountForm, 'error', err.response.data);
+      }
+    }
   });
 });
