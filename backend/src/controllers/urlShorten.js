@@ -17,7 +17,10 @@ exports.createShotren = async (req, res) => {
 exports.showStatistic = async (req, res) => {
   const username = req.user.user;
   const short_URL = req.query.url;
-  const urlInformation = await URLShorten.find({ username, short_URL });
+  const urlInformation = await URLShorten.findOne({
+    username: username,
+    short_URL: { $regex: short_URL },
+  });
   res.send(urlInformation);
   res.end();
 };

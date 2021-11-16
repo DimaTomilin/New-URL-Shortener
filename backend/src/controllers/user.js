@@ -83,5 +83,5 @@ exports.showAll = async (req, res) => {
   if (shortens.length === 0) {
     res.status(404).send('This user doesn`t have url-shortens');
   }
-  res.send(shortens);
+  res.send(shortens.reverse());
 };
