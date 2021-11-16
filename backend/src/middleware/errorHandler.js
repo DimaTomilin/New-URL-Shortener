@@ -3,7 +3,7 @@ const path = require('path');
 const URLShorten = require('../models/urlShorten');
 
 //Check if this user already have shorten url to this url
-async function isURLExist(req, res, next) {
+exports.isURLExist = async (req, res, next) => {
   const URL = req.body.url;
   const username = req.user.user;
   try {
@@ -18,15 +18,21 @@ async function isURLExist(req, res, next) {
   } catch (err) {
     return res.send(err);
   }
-}
+};
 
-function serverError(error, req, res, next) {
-  res.status(500);
-  res.send('Oops, something went wrong.');
-  res.end();
-}
+exports.unknownEndpoint = (req, res, next) => {
+  // if i got to this middleware then i missed endpoint
+  res.status(404).json({ error: 'Unknown endpoint' });
+  next();
+};
 
-module.exports = {
-  isURLExist,
-  serverError,
+exports.errorHandlerMiddleware = (err, req, res, next) => {
+  if (err.status) {
+    res.status(err.status);
+    res.send({ error: err.message });
+  } else {
+    console.log(err);
+    res.status(500);
+    res.send({ error: 'Internal Server Error' });
+  }
 };
