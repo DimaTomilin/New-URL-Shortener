@@ -5,15 +5,19 @@ const cookieParser = require('cookie-parser');
 const server = express();
 require('dotenv').config();
 
+const URLShorten = require('./src/models/urlShorten');
+
 const path = require('path');
 const cors = require('cors');
 
 const port = process.env.PORT || 3030;
 
-const { serverError } = require('./src/middleware/errorHandler');
+const {
+  errorHandlerMiddleware,
+  unknownEndpoint,
+} = require('./src/middleware/errorHandler');
 const urlRouter = require('./src/routers/urlRouter');
 const userRouter = require('./src/routers/userRouter');
-const { findFile } = require('./src/directive');
 
 server.use(express.json());
 server.use(cookieParser());
@@ -44,14 +48,24 @@ mongoose
 server.use('/user', userRouter);
 server.use('/url', urlRouter);
 
-server.get('/:url', (req, res) => {
+server.get('/:url', async (req, res) => {
   const url = req.params.url;
-  const longURL = findFile(url);
-  res.redirect(longURL);
+  const shorten = await URLShorten.findOne({
+    short_URL: { $regex: url },
+  });
+  await URLShorten.updateOne(
+    {
+      short_URL: { $regex: url },
+    },
+    { counter: shorten.counter + 1 }
+  );
+  res.redirect(shorten.original_URL);
   res.end();
 });
 
-server.use(serverError);
+server.use(unknownEndpoint);
+
+server.use(errorHandlerMiddleware);
 
 // starting the server
 server.listen(port, () => {
